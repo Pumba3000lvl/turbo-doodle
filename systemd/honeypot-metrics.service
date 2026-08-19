@@ -1,0 +1,16 @@
+[Unit]
+Description=Honeypot Metrics Exporter
+After=network.target
+
+[Service]
+Type=simple
+User={{REPLACE_WITH_USER}}
+WorkingDirectory={{REPLACE_WITH_PROJECT_PATH}}
+ExecStart=/usr/bin/env python3 {{REPLACE_WITH_PROJECT_PATH}}/src/honeypot/metrics_exporter.py
+Restart=always
+RestartSec=5
+Environment=HONEYPOT_METRICS_PORT=8000
+Environment=HONEYPOT_POLL_INTERVAL=10
+
+[Install]
+WantedBy=multi-user.target

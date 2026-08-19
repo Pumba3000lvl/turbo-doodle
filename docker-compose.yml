@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  honeypot-app:
+    build:
+      context: .
+      dockerfile: Dockerfile.app
+    image: honeypot-app:latest
+    container_name: honeypot-app
+    volumes:
+      - ./:/app:rw
+      - honeypot-db:/app/honeypot.db
+      - honeypot-logs:/app/logs
+    environment:
+      - HONEYPOT_METRICS_PORT=8000
+      - HONEYPOT_POLL_INTERVAL=10
+      - HONEYPOT_BIND=0.0.0.0
+    ports:
+      - "2222:2222"
+      - "8080:8080"
+    restart: unless-stopped
+
+  honeypot-exporter:
+    build:
+      context: .
+      dockerfile: Dockerfile.exporter
+    image: honeypot-exporter:latest
+    container_name: honeypot-exporter
+    volumes:
+      - ./:/app:ro
+      - honeypot-db:/app/honeypot.db:ro
+    working_dir: /app
+    environment:
+      - HONEYPOT_METRICS_PORT=8000
+      - HONEYPOT_POLL_INTERVAL=10
+      - HONEYPOT_METRICS_BIND=0.0.0.0
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+
+volumes:
+  honeypot-db:
+  honeypot-logs:

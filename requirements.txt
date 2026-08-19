@@ -1,0 +1,9 @@
+paramiko
+cryptography
+flask
+streamlit
+sqlite-utils
+pandas
+prometheus_client
+bcrypt
+pytest

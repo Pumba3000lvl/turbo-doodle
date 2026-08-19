@@ -1,0 +1,81 @@
+{
+  "dashboard": {
+    "id": null,
+    "uid": "honeypot-dashboard",
+    "title": "Honeypot - Grafana",
+    "timezone": "browser",
+    "schemaVersion": 30,
+    "version": 1,
+    "refresh": "10s",
+    "panels": [
+      {
+        "type": "timeseries",
+        "title": "Events over time",
+        "gridPos": {"x": 0, "y": 0, "w": 12, "h": 8},
+        "targets": [
+          {
+            "refId": "A",
+            "datasource": {"type": "sqlite", "uid": "__REPLACE_WITH_DATASOURCE_UID__"},
+            "rawSql": "SELECT strftime('%Y-%m-%dT%H:%M:%SZ', ts) AS time, count(*) AS value FROM events WHERE $__timeFilter(ts) GROUP BY time ORDER BY time",
+            "format": "time_series"
+          }
+        ]
+      },
+      {
+        "type": "table",
+        "title": "Event types (distribution)",
+        "gridPos": {"x": 12, "y": 0, "w": 12, "h": 6},
+        "targets": [
+          {
+            "refId": "B",
+            "datasource": {"type": "sqlite", "uid": "__REPLACE_WITH_DATASOURCE_UID__"},
+            "rawSql": "SELECT event_type as metric, count(*) as value FROM events WHERE $__timeFilter(ts) GROUP BY event_type ORDER BY value DESC",
+            "format": "table"
+          }
+        ]
+      },
+      {
+        "type": "table",
+        "title": "Top source IPs",
+        "gridPos": {"x": 0, "y": 8, "w": 12, "h": 6},
+        "targets": [
+          {
+            "refId": "C",
+            "datasource": {"type": "sqlite", "uid": "__REPLACE_WITH_DATASOURCE_UID__"},
+            "rawSql": "SELECT src_ip as ip, count(*) as attempts FROM events WHERE $__timeFilter(ts) GROUP BY src_ip ORDER BY attempts DESC LIMIT 20",
+            "format": "table"
+          }
+        ]
+      },
+      {
+        "type": "table",
+        "title": "Recent events",
+        "gridPos": {"x": 12, "y": 6, "w": 12, "h": 8},
+        "targets": [
+          {
+            "refId": "D",
+            "datasource": {"type": "sqlite", "uid": "__REPLACE_WITH_DATASOURCE_UID__"},
+            "rawSql": "SELECT id, ts, src_ip, src_port, event_type, username, CASE WHEN password IS NOT NULL THEN '***' ELSE NULL END AS password, command FROM events ORDER BY ts DESC LIMIT 200",
+            "format": "table"
+          }
+        ]
+      },
+      {
+        "type": "stat",
+        "title": "Suspicious passwords (count)",
+        "gridPos": {"x": 0, "y": 14, "w": 24, "h": 4},
+        "targets": [
+          {
+            "refId": "E",
+            "datasource": {"type": "sqlite", "uid": "__REPLACE_WITH_DATASOURCE_UID__"},
+            "rawSql": "SELECT count(*) as value FROM events WHERE $__timeFilter(ts) AND (password IS NOT NULL AND (length(password) < 6 OR lower(password) IN ('123456','password','admin','qwerty','1234','12345','letmein','root','toor') OR password GLOB '????' ))",
+            "format": "table"
+          }
+        ]
+      }
+    ],
+    "templating": { "list": [] },
+    "time": {"from": "now-24h", "to": "now"}
+  },
+  "overwrite": false
+}

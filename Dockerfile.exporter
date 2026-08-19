@@ -1,0 +1,31 @@
+# Optimized Dockerfile for honeypot metrics exporter
+# Uses a small slim Python image and installs only exporter deps
+FROM python:3.11-slim
+
+# Avoid running as root
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+
+# Create non-root user
+RUN addgroup --system honeypot && adduser --system --ingroup honeypot honeypot
+
+WORKDIR /app
+
+# Install minimal build deps and pip
+RUN apt-get update && apt-get install -y --no-install-recommends gcc libsqlite3-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy only requirements for exporter (smaller image)
+COPY requirements-exporter.txt ./
+RUN pip install --no-cache-dir -r requirements-exporter.txt
+
+# Copy exporter code
+COPY src/honeypot/metrics_exporter.py ./src/honeypot/metrics_exporter.py
+
+# Expose metrics port
+EXPOSE 8000
+
+# Use non-root user
+USER honeypot
+
+ENTRYPOINT ["/usr/local/bin/python", "src/honeypot/metrics_exporter.py"]

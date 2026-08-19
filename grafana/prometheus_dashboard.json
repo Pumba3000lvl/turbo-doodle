@@ -1,0 +1,91 @@
+{
+  "dashboard": {
+    "id": null,
+    "uid": "honeypot-prometheus",
+    "title": "Honeypot - Prometheus",
+    "timezone": "browser",
+    "schemaVersion": 30,
+    "version": 1,
+    "refresh": "15s",
+    "panels": [
+      {
+        "type": "timeseries",
+        "title": "Events over time (by type)",
+        "gridPos": {"x": 0, "y": 0, "w": 12, "h": 8},
+        "targets": [
+          {
+            "expr": "sum by(event_type) (increase(honeypot_events_total[5m]))",
+            "legendFormat": "{{event_type}}",
+            "refId": "A",
+            "datasource": {"type": "prometheus", "uid": "__PROMETHEUS_DS_UID__"}
+          }
+        ]
+      },
+      {
+        "type": "stat",
+        "title": "Total events (rate 5m)",
+        "gridPos": {"x": 12, "y": 0, "w": 6, "h": 4},
+        "targets": [
+          {
+            "expr": "sum(increase(honeypot_events_total[5m]))",
+            "refId": "B",
+            "datasource": {"type": "prometheus", "uid": "__PROMETHEUS_DS_UID__"}
+          }
+        ]
+      },
+      {
+        "type": "table",
+        "title": "Event types (last hour)",
+        "gridPos": {"x": 18, "y": 0, "w": 6, "h": 4},
+        "targets": [
+          {
+            "expr": "sum by(event_type) (increase(honeypot_events_total[1h]))",
+            "refId": "C",
+            "datasource": {"type": "prometheus", "uid": "__PROMETHEUS_DS_UID__"},
+            "format": "table"
+          }
+        ]
+      },
+      {
+        "type": "table",
+        "title": "Top source IPs (last hour)",
+        "gridPos": {"x": 0, "y": 8, "w": 12, "h": 6},
+        "targets": [
+          {
+            "expr": "topk(20, sum by(src_ip) (increase(honeypot_events_by_ip[1h])))",
+            "refId": "D",
+            "datasource": {"type": "prometheus", "uid": "__PROMETHEUS_DS_UID__"},
+            "format": "table"
+          }
+        ]
+      },
+      {
+        "type": "stat",
+        "title": "Suspicious passwords (count)",
+        "gridPos": {"x": 12, "y": 4, "w": 6, "h": 4},
+        "targets": [
+          {
+            "expr": "honeypot_suspicious_passwords_total",
+            "refId": "E",
+            "datasource": {"type": "prometheus", "uid": "__PROMETHEUS_DS_UID__"}
+          }
+        ]
+      },
+      {
+        "type": "stat",
+        "title": "Last event (unix ts)",
+        "gridPos": {"x": 12, "y": 8, "w": 6, "h": 4},
+        "targets": [
+          {
+            "expr": "honeypot_last_event_timestamp",
+            "refId": "F",
+            "datasource": {"type": "prometheus", "uid": "__PROMETHEUS_DS_UID__"}
+          }
+        ]
+      }
+    ],
+    "templating": { "list": [] },
+    "time": {"from": "now-24h", "to": "now"}
+  },
+  "overwrite": false
+}
