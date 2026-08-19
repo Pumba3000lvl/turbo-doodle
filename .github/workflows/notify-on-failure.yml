@@ -1,0 +1,22 @@
+name: Notify on workflow failure
+
+on:
+  workflow_run:
+    types: [completed]
+
+jobs:
+  notify:
+    if: ${{ github.event.workflow_run.conclusion == 'failure' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notify Slack
+        uses: 8398a7/action-slack@v3
+        with:
+          status: custom
+          fields: workflow,job,commit,repo,author
+          custom_payload: |
+            {
+              "text": ":x: Workflow *${{ github.event.workflow_run.name }}* failed in repo *${{ github.repository }}*\n> <${{ github.event.workflow_run.html_url }}|Open run>"
+            }
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
